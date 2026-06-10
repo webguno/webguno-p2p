@@ -86,6 +86,7 @@ export class P2PConnection {
   private setupDataChannel(channel: RTCDataChannel) {
     this.dataChannel = channel;
     this.dataChannel.binaryType = 'arraybuffer';
+    this.dataChannel.bufferedAmountLowThreshold = 1024 * 1024 * 2; // 2MB
     
     this.dataChannel.onopen = () => {
       this.onStatusChange('connected');
@@ -255,12 +256,32 @@ export class P2PConnection {
       this.onFileTransferProgress({ fileName: file.name, progress: offset / file.size });
       
       if (offset < file.size) {
-        readSlice(offset);
+        if (this.dataChannel.bufferedAmount > 1024 * 1024 * 4) { // 4MB Backpressure
+          const onLowBuffer = () => {
+             this.dataChannel?.removeEventListener('bufferedamountlow', onLowBuffer);
+             readSlice(offset);
+          };
+          this.dataChannel.addEventListener('bufferedamountlow', onLowBuffer);
+        } else {
+          readSlice(offset);
+        }
       } else {
         // Send end signal
-        this.dataChannel.send(JSON.stringify({ type: 'file-end' }));
-        this.onFileTransferProgress({ fileName: file.name, progress: 1 });
-        this.onFileSendComplete();
+        const sendEnd = () => {
+          this.dataChannel!.send(JSON.stringify({ type: 'file-end' }));
+          this.onFileTransferProgress({ fileName: file.name, progress: 1 });
+          this.onFileSendComplete();
+        };
+
+        if (this.dataChannel.bufferedAmount > 1024 * 1024 * 2) {
+          const onLowBuffer = () => {
+             this.dataChannel?.removeEventListener('bufferedamountlow', onLowBuffer);
+             sendEnd();
+          };
+          this.dataChannel.addEventListener('bufferedamountlow', onLowBuffer);
+        } else {
+          sendEnd();
+        }
       }
     };
     

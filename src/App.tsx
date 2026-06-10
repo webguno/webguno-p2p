@@ -66,11 +66,9 @@ export default function App() {
     };
 
     newP2p.onFileSendComplete = () => {
-      setTimeout(() => {
-        setIsTransferring(false);
-        setTransferProgress(null);
-        setSelectedFile(null);
-      }, 1000); // Give user 1s to view 100% completion before clearing
+      setIsTransferring(false);
+      setTransferProgress(null);
+      setSelectedFile(null);
     };
 
     newP2p.joinRoom(idToJoin, role === 'host');
@@ -103,6 +101,7 @@ export default function App() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
+      e.target.value = ''; // Allow re-selecting the exact same file 
     }
   };
 
@@ -330,16 +329,16 @@ export default function App() {
                             <p className="text-xs text-slate-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                         </div>
-                        <div className="flex gap-4 w-full">
+                        <div className="flex flex-col sm:flex-row gap-3 w-full">
                           <button 
                             onClick={() => setSelectedFile(null)}
-                            className="flex-1 px-10 py-4 border border-[#EADDFF] text-[#6750A4] font-bold rounded-2xl hover:bg-[#EADDFF]/20 transition-colors"
+                            className="w-full sm:flex-1 px-6 sm:px-10 py-4 border border-[#EADDFF] text-[#6750A4] font-bold rounded-2xl hover:bg-[#EADDFF]/20 transition-colors"
                           >
                             Clear
                           </button>
                           <button 
                             onClick={handleSendFile}
-                            className="flex-1 px-10 py-4 bg-[#6750A4] text-white font-bold rounded-2xl hover:bg-[#55408a] shadow-sm flex items-center justify-center gap-2 transition-colors"
+                            className="w-full sm:flex-1 px-6 sm:px-10 py-4 bg-[#6750A4] text-white font-bold rounded-2xl hover:bg-[#55408a] shadow-sm flex items-center justify-center gap-2 transition-colors"
                           >
                             Send File
                           </button>
