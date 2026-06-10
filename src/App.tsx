@@ -23,6 +23,8 @@ export default function App() {
   const [isTransferring, setIsTransferring] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isSupabaseConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -144,12 +146,16 @@ export default function App() {
           </div>
         </div>
         
-        {status === 'connected' && (
+        {status === 'connected' ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-white border border-[#EADDFF] rounded-2xl shadow-sm">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
             <span className="text-sm font-medium text-slate-600">Connected</span>
           </div>
-        )}
+        ) : !isSupabaseConfigured ? (
+           <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm">
+            <span className="text-sm font-bold text-amber-700">Supabase Keys Missing</span>
+          </div>
+        ) : null}
       </header>
 
       {/* Main Container Card */}
@@ -157,7 +163,29 @@ export default function App() {
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#EADDFF] via-[#6750A4] to-[#EADDFF]"></div>
         
         <AnimatePresence mode="wait">
-          {status === 'disconnected' && !connectionInfo && (
+          {!isSupabaseConfigured ? (
+             <motion.div 
+               key="missing-keys"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex flex-col items-center justify-center py-12 text-center"
+             >
+               <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-[24px] flex items-center justify-center mb-6">
+                 <KeyRound size={32} />
+               </div>
+               <h2 className="text-3xl font-bold text-slate-800 mb-4">Configuration Required</h2>
+               <p className="text-lg text-slate-600 max-w-xl mx-auto mb-8">
+                 To establish secure WebRTC connections, this app uses Supabase Realtime for signaling. Please configure your environment variables.
+               </p>
+               <div className="bg-slate-50 text-left p-6 rounded-[24px] border border-slate-200 w-full max-w-2xl text-sm text-slate-700">
+                 <p className="font-bold mb-3 flex items-center gap-2"><ArrowRight size={16} /> Add the following keys to your environment variables (e.g. .env or Vercel dashboard):</p>
+                 <ul className="list-disc pl-5 space-y-2 font-mono text-slate-600">
+                   <li><strong className="text-slate-800">VITE_SUPABASE_URL</strong>: Your Supabase Project URL</li>
+                   <li><strong className="text-slate-800">VITE_SUPABASE_ANON_KEY</strong>: Your Supabase Anon Key</li>
+                 </ul>
+               </div>
+             </motion.div>
+          ) : status === 'disconnected' && !connectionInfo ? (
             <motion.div 
               key="setup"
               initial={{ opacity: 0, y: 10 }}
@@ -219,9 +247,7 @@ export default function App() {
                 </div>
               </div>
             </motion.div>
-          )}
-
-          {status === 'connecting' && connectionInfo && (
+          ) : status === 'connecting' && connectionInfo ? (
             <motion.div 
               key="waiting"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -259,9 +285,7 @@ export default function App() {
                 Cancel
               </button>
             </motion.div>
-          )}
-
-          {status === 'connected' && (
+          ) : status === 'connected' ? (
             <motion.div 
               key="transfer"
               initial={{ opacity: 0 }}
@@ -396,7 +420,7 @@ export default function App() {
                 </button>
               </div>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </main>
       
