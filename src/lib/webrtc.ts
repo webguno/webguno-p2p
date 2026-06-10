@@ -34,6 +34,7 @@ export class P2PConnection {
   public onFileTransferStart: (metadata: FileMetadata) => void = () => {};
   public onFileTransferProgress: (progress: ProgressData) => void = () => {};
   public onFileTransferComplete: (fileUrl: string, fileName: string) => void = () => {};
+  public onFileSendComplete: () => void = () => {};
   
   // File transfer states
   private incomingFileInfo: FileMetadata | null = null;
@@ -259,6 +260,7 @@ export class P2PConnection {
         // Send end signal
         this.dataChannel.send(JSON.stringify({ type: 'file-end' }));
         this.onFileTransferProgress({ fileName: file.name, progress: 1 });
+        this.onFileSendComplete();
       }
     };
     

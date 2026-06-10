@@ -65,6 +65,14 @@ export default function App() {
       setReceivedFile({ url, name });
     };
 
+    newP2p.onFileSendComplete = () => {
+      setTimeout(() => {
+        setIsTransferring(false);
+        setTransferProgress(null);
+        setSelectedFile(null);
+      }, 1000); // Give user 1s to view 100% completion before clearing
+    };
+
     newP2p.joinRoom(idToJoin, role === 'host');
     setP2p(newP2p);
     setConnectionInfo({ role, id: idToJoin });
@@ -135,7 +143,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Header */}
-      <header className="w-full max-w-5xl flex justify-between items-center mb-8">
+      <header className="w-full max-w-5xl flex flex-col md:flex-row gap-4 justify-between items-center mb-8">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#6750A4] rounded-xl flex items-center justify-center text-white shadow-sm">
             <Share2 size={20} />
@@ -407,14 +415,14 @@ export default function App() {
                 )}
               </div>
 
-              <div className="flex justify-between items-center bg-[#FEF7FF] p-6 rounded-[24px] border border-[#EADDFF]">
+              <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#FEF7FF] p-6 rounded-[24px] border border-[#EADDFF]">
                 <div className="flex items-center gap-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#6750A4] bg-[#EADDFF]/50 py-1.5 px-4 rounded-full">Room Code</span>
+                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-[#6750A4] bg-[#EADDFF]/50 py-1 px-3 md:py-1.5 md:px-4 rounded-full">Room</span>
                   <span className="font-mono text-[#6750A4] font-bold tracking-widest">{connectionInfo?.id}</span>
                 </div>
                 <button 
                   onClick={disconnect}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-[#6750A4] font-bold rounded-2xl border border-[#EADDFF] hover:border-red-200 hover:text-red-600 transition-colors shadow-sm text-sm"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#6750A4] font-bold rounded-2xl border border-[#EADDFF] hover:border-red-200 hover:text-red-600 transition-colors shadow-sm text-sm"
                 >
                   <WifiOff size={16} /> Disconnect
                 </button>
